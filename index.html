@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KKU Part-Time (Test Environment)</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Babel Standalone (for transpiling JSX in the browser) -->
+  <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
+  
+  <!-- Import Map to resolve bare imports to ESM modules -->
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0?dev",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client?dev",
+        "lucide-react": "https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0"
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50">
+  <div id="root">
+    <div class="flex items-center justify-center min-h-screen text-gray-500 font-bold">
+      กำลังเตรียมแอปพลิเคชัน...
+    </div>
+  </div>
+
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+
+    async function loadReactApp() {
+      try {
+        // Fetch the raw JSX component
+        const response = await fetch('./App.jsx?v=' + Date.now());
+        if (!response.ok) throw new Error("ไม่สามารถโหลดไฟล์ App.jsx ได้");
+        
+        const jsxCode = await response.text();
+        
+        // Transpile JSX to standard JavaScript, leaving ES Module imports intact
+        const jsCode = Babel.transform(jsxCode, {
+          presets: ['react']
+        }).code;
+
+        // Create an ES Module dynamically using a Blob URL
+        const blob = new Blob([jsCode], { type: 'application/javascript' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        // Dynamically import the transpiled blob
+        const AppMap = await import(blobUrl);
+        const App = AppMap.default;
+
+        if (!App) throw new Error("App.jsx ไม่ได้ export default function App");
+
+        // Render the app
+        const root = createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+        
+      } catch (error) {
+        document.getElementById('root').innerHTML = `
+          <div class="p-8 max-w-lg mx-auto mt-20 bg-red-50 text-red-600 rounded-2xl shadow-sm border border-red-200">
+            <h2 class="text-lg font-bold mb-2">เกิดข้อผิดพลาดในการรันแอปพลิเคชัน:</h2>
+            <p class="font-mono text-sm whitespace-pre-wrap">${error.message}</p>
+          </div>
+        `;
+        console.error(error);
+      }
+    }
+
+    loadReactApp();
+  </script>
+</body>
+</html>
