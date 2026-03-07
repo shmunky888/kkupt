@@ -82,17 +82,17 @@ const MOCK_NOTIFS = [
 /* Storage Helpers */
 const LS = {
   get: (k) => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } },
-  set: (k, v) => localStorage.setItem(k, JSON.stringify(v))
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch(e) { console.error("LS set failed:", e); } }
 };
 
 /* Reusable Components */
 
-const Btn = ({ children, onClick, color, outline, small, full, disabled }) => {
+const Btn = ({ children, onClick, color, outline, small, full, disabled, type = "button" }) => {
   const baseClasses = `font-semibold active:scale-95 flex justify-center items-center transition-all ${small ? 'px-3 py-1.5 text-xs rounded-lg' : 'px-4 py-2.5 text-sm rounded-xl'} ${full ? 'w-full' : ''}`;
   
   if (disabled) {
     return (
-      <button disabled className={`${baseClasses} opacity-50 cursor-not-allowed bg-gray-300 text-gray-600`}>
+      <button type={type} disabled className={`${baseClasses} opacity-50 cursor-not-allowed bg-gray-300 text-gray-600`}>
         {children}
       </button>
     );
@@ -100,14 +100,14 @@ const Btn = ({ children, onClick, color, outline, small, full, disabled }) => {
 
   if (outline) {
     return (
-      <button onClick={onClick} className={`${baseClasses} border-2 bg-transparent ${color ? '' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`} style={color ? { borderColor: color, color: color } : {}}>
+      <button type={type} onClick={onClick} className={`${baseClasses} border-2 bg-transparent ${color ? '' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`} style={color ? { borderColor: color, color: color } : {}}>
         {children}
       </button>
     );
   }
 
   return (
-    <button onClick={onClick} className={`${baseClasses} text-white ${color ? '' : 'bg-gray-800 focus:bg-gray-900'}`} style={color ? { backgroundColor: color } : {}}>
+    <button type={type} onClick={onClick} className={`${baseClasses} text-white ${color ? '' : 'bg-gray-800 focus:bg-gray-900'}`} style={color ? { backgroundColor: color } : {}}>
       {children}
     </button>
   );
@@ -374,6 +374,14 @@ const AuthScreen = ({ users, setUsers, onLoginSuccess, showToast }) => {
     setView("login");
   };
 
+  const changeView = (newView) => {
+    setView(newView);
+    setEmail("");
+    setPassword("");
+    setName("");
+    setRole("employee");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       {showPolicy && <PolicyModal onAccept={() => onLoginSuccess(pendingUser)} />}
@@ -387,52 +395,53 @@ const AuthScreen = ({ users, setUsers, onLoginSuccess, showToast }) => {
         </div>
 
         {view === "login" && (
-          <div className="space-y-4">
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
             <div>
-              <input type="email" placeholder="อีเมล" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#F58220] transition-colors outline-none" value={email} onChange={e => setEmail(e.target.value)} />
+              <input type="email" placeholder="อีเมล" autoComplete="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#F58220] transition-colors outline-none" value={email} onChange={e => setEmail(e.target.value)} />
             </div>
             <div className="relative">
-              <input type={showPwd ? "text" : "password"} placeholder="รหัสผ่าน" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#F58220] transition-colors outline-none pr-12" value={password} onChange={e => setPassword(e.target.value)} />
+              <input type={showPwd ? "text" : "password"} placeholder="รหัสผ่าน" autoComplete="current-password" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-[#F58220] transition-colors outline-none pr-12" value={password} onChange={e => setPassword(e.target.value)} />
               <button 
+                type="button"
                 onClick={() => setShowPwd(!showPwd)} 
                 className="absolute right-3 top-3.5 text-gray-400 p-1 hover:text-gray-600"
               >
                 {showPwd ? <EyeOff size={18}/> : <Eye size={18}/>}
               </button>
             </div>
-            <Btn full color="#F58220" onClick={handleLogin}>เข้าสู่ระบบ</Btn>
+            <Btn type="submit" full color="#F58220">เข้าสู่ระบบ</Btn>
             <div className="flex justify-between items-center text-sm pt-2">
-              <button onClick={() => setView("register")} className="text-gray-500 hover:text-gray-800">สมัครสมาชิก</button>
-              <button onClick={() => setView("forgot")} className="text-[#F58220] hover:underline">ลืมรหัสผ่าน?</button>
+              <button type="button" onClick={() => changeView("register")} className="text-gray-500 hover:text-gray-800">สมัครสมาชิก</button>
+              <button type="button" onClick={() => changeView("forgot")} className="text-[#F58220] hover:underline">ลืมรหัสผ่าน?</button>
             </div>
-          </div>
+          </form>
         )}
 
         {view === "register" && (
-          <div className="space-y-4">
-            <input type="text" placeholder="ชื่อ-นามสกุล" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={name} onChange={e => setName(e.target.value)} />
-            <input type="email" placeholder="อีเมล" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={email} onChange={e => setEmail(e.target.value)} />
-            <input type="password" placeholder="รหัสผ่าน" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={password} onChange={e => setPassword(e.target.value)} />
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleRegister(); }}>
+            <input type="text" placeholder="ชื่อ-นามสกุล" autoComplete="name" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={name} onChange={e => setName(e.target.value)} />
+            <input type="email" placeholder="อีเมล" autoComplete="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={email} onChange={e => setEmail(e.target.value)} />
+            <input type="password" placeholder="รหัสผ่าน" autoComplete="new-password" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={password} onChange={e => setPassword(e.target.value)} />
             <select className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={role} onChange={e => setRole(e.target.value)}>
               <option value="employee">หางาน (นักศึกษา)</option>
               <option value="employer">ประกาศงาน (นายจ้าง)</option>
             </select>
-            <Btn full color="#F58220" onClick={handleRegister}>สมัครสมาชิก</Btn>
+            <Btn type="submit" full color="#F58220">สมัครสมาชิก</Btn>
             <div className="text-center pt-2">
-              <button onClick={() => setView("login")} className="text-sm text-gray-500 hover:text-gray-800">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</button>
+              <button type="button" onClick={() => changeView("login")} className="text-sm text-gray-500 hover:text-gray-800">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</button>
             </div>
-          </div>
+          </form>
         )}
 
         {view === "forgot" && (
-          <div className="space-y-4">
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleForgot(); }}>
             <p className="text-sm text-gray-600 mb-2">กรุณากรอกอีเมลเพื่อรับลิงก์รีเซ็ตรหัสผ่าน</p>
-            <input type="email" placeholder="อีเมล" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={email} onChange={e => setEmail(e.target.value)} />
-            <Btn full color="#F58220" onClick={handleForgot}>ส่งลิงก์รีเซ็ต</Btn>
+            <input type="email" placeholder="อีเมล" autoComplete="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={email} onChange={e => setEmail(e.target.value)} />
+            <Btn type="submit" full color="#F58220">ส่งลิงก์รีเซ็ต</Btn>
             <div className="text-center pt-2">
-               <button onClick={() => setView("login")} className="text-sm text-gray-500 hover:text-gray-800">กลับไปหน้าเข้าสู่ระบบ</button>
+               <button type="button" onClick={() => changeView("login")} className="text-sm text-gray-500 hover:text-gray-800">กลับไปหน้าเข้าสู่ระบบ</button>
             </div>
-          </div>
+          </form>
         )}
 
       </div>
@@ -734,7 +743,7 @@ const Sidebar = ({ currentTab, setTab, currentUser, onLogout }) => (
         <AvatarCircle name={currentUser.name} size={40} />
         <div className="overflow-hidden">
           <div className="font-bold text-sm text-gray-800 truncate">{currentUser.name}</div>
-          <div className="text-xs text-gray-500">{currentUser.role === 'employer' ? 'นายจ้าง' : 'พนักงาน'}</div>
+          <div className="text-xs text-gray-500">{currentUser.role === 'employer' ? 'นายจ้าง' : 'นักศึกษา'}</div>
         </div>
       </div>
       <button onClick={onLogout} className="flex items-center text-red-500 font-medium text-sm hover:underline">
@@ -1371,6 +1380,7 @@ export default function App() {
 
   // Modals & UI states
   const [toastMsg, setToastMsg] = useState("");
+  const showToast = useCallback((msg) => setToastMsg(msg), []);
   const [showConfirm, setShowConfirm] = useState(null);
   
   const [showNotifModal, setShowNotifModal] = useState(false);
@@ -1405,15 +1415,25 @@ export default function App() {
     setNotifsEnabled(LS.get("kku_notifications_enabled") ?? true);
     
     setInited(true);
-  }, []);
+
+    // Override alert after init to handle mock interactions
+    const originalAlert = window.alert;
+    window.alert = (msg) => {
+      if (msg === "เปิด EditProfileModal") setShowEditProfileModal(true);
+      else if (msg === "เปิด SettingsModal") setShowSettingsModal(true);
+      else if (msg.startsWith("เปิด ReviewModal:")) setReviewAppId(msg.split(":")[1].trim());
+      else if (msg === "เปิด ManageJobModal") showToast("กรุณากดจัดการที่หน้าโปรไฟล์ (mock alert caught)");
+      else if (msg.startsWith("เปิด Report Modal สำหรับ:")) setReportTarget({ id: msg.split(":")[1].trim(), name: "User" });
+      else originalAlert(msg);
+    };
+    return () => { window.alert = originalAlert; };
+  }, [showToast]);
 
   const syncUsers = useCallback((v) => { setUsers(v); LS.set("kku_users", v); }, []);
   const syncJobs = useCallback((v) => { setJobs(v); LS.set("kku_jobs", v); }, []);
   const syncApps = useCallback((v) => { setApps(v); LS.set("kku_apps", v); }, []);
   const syncChats = useCallback((v) => { setChats(v); LS.set("kku_chats", v); }, []);
   const syncNotifs = useCallback((v) => { setNotifs(v); LS.set("kku_notifs", v); }, []);
-
-  const showToast = useCallback((msg) => setToastMsg(msg), []);
   
   const addNotif = useCallback(({ userId, type, jobId, text }) => {
     if (!notifsEnabled) return;
@@ -1495,22 +1515,13 @@ export default function App() {
     setCurrentUser(null); setScreen("login");
   }, []);
 
-  if (!inited) return <div className="min-h-screen bg-gray-50"></div>;
+  // State sync and effects handled in useEffect above
+  if (!inited) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Loading...</div>;
   if (screen === "login" || !currentUser) {
     return <AuthScreen users={users} setUsers={syncUsers} onLoginSuccess={handleLoginSuccess} showToast={showToast} />;
   }
 
   const myUnreadNotifs = notifs.filter(n => n.userId === currentUser.id && !n.read);
-
-  // Expose setModals to mock components calling window.alert
-  window.alert = (msg) => {
-    if (msg === "เปิด EditProfileModal") setShowEditProfileModal(true);
-    else if (msg === "เปิด SettingsModal") setShowSettingsModal(true);
-    else if (msg.startsWith("เปิด ReviewModal:")) setReviewAppId(msg.split(":")[1].trim());
-    else if (msg === "เปิด ManageJobModal") showToast("กรุณากดจัดการที่หน้าโปรไฟล์ (mock alert caught)");
-    else if (msg.startsWith("เปิด Report Modal สำหรับ:")) setReportTarget({ id: msg.split(":")[1].trim(), name: "User" });
-    else console.log(msg);
-  };
 
   return (
     <>
