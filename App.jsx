@@ -1333,9 +1333,9 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
             <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center"><span className="text-xl mr-2">📌</span> งานที่ลงประกาศ</h3>
             <div className="space-y-4">
-              {jobs.filter(j => j.employerId === currentUser.id).length === 0 ? (
+              {jobs.filter(j => j.employerId === currentUser.id && j.status !== "deleted").length === 0 ? (
                 <p className="text-gray-500 text-sm py-4 text-center">ยังไม่มีงานที่ลงประกาศ</p>
-              ) : jobs.filter(j => j.employerId === currentUser.id).sort((a,b)=>b.postedAt-a.postedAt).map(j => (
+              ) : jobs.filter(j => j.employerId === currentUser.id && j.status !== "deleted").sort((a,b)=>b.postedAt-a.postedAt).map(j => (
                 <div key={j.id} className="p-4 border border-gray-100 rounded-2xl bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-blue-200 transition-colors">
                   <div>
                     <div className="font-bold text-gray-800 mb-2">{j.title}</div>
@@ -1484,11 +1484,19 @@ export default function App() {
   const handleDeleteJob = useCallback((jobId) => {
     setShowConfirm({
       title: "ลบประกาศงาน",
-      msg: "การกระทำนี้ไม่สามารถย้อนกลับได้ และจะยกเลิกการสมัครของทุกคน",
+      msg: "การกระทำนี้จะลบประกาศงาน แต่จะยังคงอยู่ในประวัติของผู้ที่ทำงานเสร็จสิ้นแล้ว",
       confirmLabel: "ลบ",
       onConfirm: () => {
-        syncJobs(jobs.filter(j => j.id !== jobId));
-        syncApps(apps.filter(a => a.jobId !== jobId));
+        const hasCompletedApps = apps.some(a => a.jobId === jobId && a.workStatus === "completed");
+        
+        if (hasCompletedApps) {
+          syncJobs(jobs.map(j => j.id === jobId ? { ...j, status: "deleted" } : j));
+          syncApps(apps.filter(a => a.jobId !== jobId || a.workStatus === "completed"));
+        } else {
+          syncJobs(jobs.filter(j => j.id !== jobId));
+          syncApps(apps.filter(a => a.jobId !== jobId));
+        }
+        
         syncNotifs(notifs.filter(n => n.jobId !== jobId));
         showToast("ลบประกาศงานแล้ว");
         setManageJobId(null);
