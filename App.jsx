@@ -342,7 +342,8 @@ const AuthScreen = ({ users, setUsers, onLoginSuccess, showToast }) => {
   const [pendingUser, setPendingUser] = useState(null);
 
   const handleLogin = () => {
-    const u = users.find(u => u.email === email && u.password === password);
+    const safeEmail = email.trim().toLowerCase();
+    const u = users.find(u => u.email.trim().toLowerCase() === safeEmail && u.password === password);
     if (u) {
       setPendingUser(u);
       setShowPolicy(true);
@@ -716,11 +717,16 @@ const ReportModal = ({ targetUserId, targetName, showToast, onClose }) => {
 /* Layout Components */
 const Sidebar = ({ currentTab, setTab, currentUser, onLogout, isOpen, onClose }) => (
   <>
-    {isOpen && <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />}
-    <div className={`flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-white border-r border-gray-200 z-50 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-      <div className="h-14 flex items-center justify-between px-4 border-b border-gray-100">
+    {/* Mobile Overlay */}
+    {isOpen && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={onClose} />}
+    
+    {/* Sidebar Container */}
+    <div className={`flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-white border-r border-gray-200 transition-transform duration-300 z-50 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      
+      {/* Header */}
+      <div className="h-14 flex items-center justify-between md:justify-center px-4 md:px-0 border-b border-gray-100">
         <div className="text-[#F58220] font-black text-xl tracking-wider">KKU <span className="text-gray-800">PT</span></div>
-        <button className="text-gray-400 hover:text-gray-600" onClick={onClose}><X size={20}/></button>
+        <button className="md:hidden text-gray-400 hover:text-gray-600" onClick={onClose}><X size={20}/></button>
       </div>
     <div className="flex-1 py-4 space-y-1">
       {[
@@ -840,39 +846,15 @@ const BottomTabBar = ({ currentTab, setTab, currentUser }) => (
 
 
 /* Home Tab */
-const HomeTab = ({ jobs, apps, currentUser, activeCat, setActiveCat, keyword, onApply, onWithdraw, onOpenChat, onManage }) => {
+const HomeTab = ({ jobs, apps, currentUser, keyword, onApply, onWithdraw, onOpenChat, onManage }) => {
   const filtered = jobs
     .filter(j => j.status === "active")
-    .filter(j => activeCat === "ทั้งหมด" || j.category === activeCat)
     .filter(j => !keyword || j.title.toLowerCase().includes(keyword.toLowerCase()) || j.company.toLowerCase().includes(keyword.toLowerCase()))
     .filter(j => currentUser.role !== 'employer' || j.employerId === currentUser.id)
     .sort((a, b) => b.postedAt - a.postedAt);
 
   return (
     <div className="flex flex-col md:flex-row gap-6">
-      {/* Categories */}
-      {currentUser.role !== 'employer' && (
-        <div className="md:w-48 shrink-0">
-          <h3 className="font-bold text-gray-800 mb-3 hidden md:block">หมวดหมู่งาน</h3>
-          <div className="flex md:flex-col gap-2 overflow-x-auto no-scrollbar md:overflow-visible pb-2 md:pb-0">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCat(cat)}
-                className={`whitespace-nowrap px-4 py-2 rounded-full md:rounded-xl text-sm font-medium transition-colors md:text-left ${
-                  activeCat === cat 
-                    ? "shadow-sm text-white" 
-                    : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-                }`}
-                style={activeCat === cat ? { backgroundColor: "#F58220", borderColor: "#F58220" } : {}}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Feed */}
       <div className="flex-1">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1373,8 +1355,45 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
 };
 
 
-/* App Root */
-export default function App() {
+/* Error Boundary for Production Stability */
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("🚨 App Runtime Crash:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-red-50 flex flex-col items-center justify-center p-8 text-center border-t-8 border-red-500">
+          <div className="bg-white p-8 rounded-3xl shadow-xl max-w-lg border border-red-100">
+            <span className="text-4xl mb-4 block">⚠️</span>
+            <h1 className="text-2xl font-bold text-red-600 mb-2">ระบบเกิดข้อผิดพลาด (System Crash)</h1>
+            <p className="text-gray-600 mb-6 text-sm">แอปพลิเคชันของคุณพบปัญหาในระหว่างการรัน โค้ดถูกจับไว้โดย Error Boundary เพื่อป้องกันหน้าจอขาว (White Screen of Death)</p>
+            <div className="bg-gray-100 p-4 rounded-xl text-left overflow-auto max-h-40">
+              <code className="text-xs text-red-500 font-mono">{this.state.error?.toString()}</code>
+            </div>
+            <button onClick={() => window.location.reload()} className="mt-6 w-full bg-red-500 text-white font-bold py-3 px-4 rounded-xl hover:bg-red-600 transition-colors">
+              รีโหลดแอปพลิเคชัน
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+/* App Root logic */
+function MainApp() {
   const [users, setUsers] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [apps, setApps] = useState([]);
@@ -1389,7 +1408,7 @@ export default function App() {
   const [keyword, setKeyword] = useState("");
   const [activeCat, setActiveCat] = useState("ทั้งหมด");
   const [notifsEnabled, setNotifsEnabled] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
 
   // Modals & UI states
   const [toastMsg, setToastMsg] = useState("");
@@ -1539,7 +1558,13 @@ export default function App() {
   // State sync and effects handled in useEffect above
   if (!inited) return <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-400">Loading...</div>;
   if (screen === "login" || !currentUser) {
-    return <AuthScreen users={users} setUsers={syncUsers} onLoginSuccess={handleLoginSuccess} showToast={showToast} />;
+    return (
+      <>
+        <Toast msg={toastMsg} onDismiss={() => setToastMsg("")} />
+        <FontLoader />
+        <AuthScreen users={users} setUsers={syncUsers} onLoginSuccess={handleLoginSuccess} showToast={showToast} />
+      </>
+    );
   }
 
   const myUnreadNotifs = notifs.filter(n => n.userId === currentUser.id && !n.read);
@@ -1583,21 +1608,21 @@ export default function App() {
       )}
 
       <div className="flex flex-col md:flex-row min-h-[100dvh] bg-gray-50">
-        <Sidebar currentTab={tab} setTab={(t) => { setTab(t); setIsSidebarOpen(false); }} currentUser={currentUser} onLogout={handleLogout} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <Sidebar currentTab={tab} setTab={(t) => { setTab(t); setIsSidebarOpen(window.innerWidth >= 768); }} currentUser={currentUser} onLogout={handleLogout} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         
-        <div className="flex-1 flex flex-col min-h-screen">
+        <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 w-full ${isSidebarOpen ? 'md:ml-60' : 'ml-0'}`}>
           <TopNavbar 
             keyword={keyword} setKeyword={setKeyword} 
             unreadCount={myUnreadNotifs.length} 
             toggleNotifs={() => setShowNotifModal(true)} 
             currentUser={currentUser}
             onLogout={handleLogout}
-            toggleSidebar={() => setIsSidebarOpen(true)}
+            toggleSidebar={() => setIsSidebarOpen(prev => !prev)}
           />
           <MobileHeader 
             unreadCount={myUnreadNotifs.length} 
             toggleNotifs={() => setShowNotifModal(true)} 
-            toggleSidebar={() => setIsSidebarOpen(true)}
+            toggleSidebar={() => setIsSidebarOpen(prev => !prev)}
           />
 
           {notifsEnabled && myUnreadNotifs.length > 0 && (
@@ -1616,7 +1641,7 @@ export default function App() {
             {tab === "home" && (
               <HomeTab 
                 jobs={jobs} apps={apps} currentUser={currentUser}
-                activeCat={activeCat} setActiveCat={setActiveCat} keyword={keyword}
+                keyword={keyword}
                 onApply={handleApply} onWithdraw={handleWithdraw}
                 onOpenChat={handleOpenChat}
                 onManage={(job) => setManageJobId(job.id)}
@@ -1640,5 +1665,13 @@ export default function App() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <MainApp />
+    </ErrorBoundary>
   );
 }
