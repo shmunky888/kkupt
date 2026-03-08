@@ -716,11 +716,11 @@ const ReportModal = ({ targetUserId, targetName, showToast, onClose }) => {
 /* Layout Components */
 const Sidebar = ({ currentTab, setTab, currentUser, onLogout, isOpen, onClose }) => (
   <>
-    {isOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose} />}
-    <div className={`flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-white border-r border-gray-200 z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-      <div className="h-14 flex items-center justify-between px-4 border-b border-gray-100 md:justify-center">
+    {isOpen && <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />}
+    <div className={`flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-white border-r border-gray-200 z-50 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className="h-14 flex items-center justify-between px-4 border-b border-gray-100">
         <div className="text-[#F58220] font-black text-xl tracking-wider">KKU <span className="text-gray-800">PT</span></div>
-        <button className="md:hidden text-gray-400 hover:text-gray-600" onClick={onClose}><X size={20}/></button>
+        <button className="text-gray-400 hover:text-gray-600" onClick={onClose}><X size={20}/></button>
       </div>
     <div className="flex-1 py-4 space-y-1">
       {[
@@ -757,13 +757,16 @@ const Sidebar = ({ currentTab, setTab, currentUser, onLogout, isOpen, onClose })
   </>
 );
 
-const TopNavbar = ({ keyword, setKeyword, unreadCount, toggleNotifs, currentUser, onLogout }) => {
+const TopNavbar = ({ keyword, setKeyword, unreadCount, toggleNotifs, currentUser, onLogout, toggleSidebar }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   return (
     <div className="hidden md:flex h-14 bg-white border-b border-gray-200 sticky top-0 z-20 items-center justify-between px-6">
       <div className="flex items-center gap-4">
-        <div className="text-[#F58220] font-black text-lg tracking-wider md:hidden">KKU PT</div>
-        <div className="text-gray-500 text-sm font-semibold tracking-wider">PART-TIME</div>
+        <button onClick={toggleSidebar} className="p-1 text-gray-500 hover:text-gray-800 transition-colors">
+          <Menu size={20} />
+        </button>
+        <div className="text-[#F58220] font-black text-lg tracking-wider">KKU PT</div>
+        <div className="text-gray-500 text-sm font-semibold tracking-wider border-l border-gray-200 pl-4 hidden md:block">PART-TIME</div>
       </div>
       {currentUser.role !== 'employer' && (
         <div className="flex-1 max-w-md relative mx-4">
@@ -1582,13 +1585,14 @@ export default function App() {
       <div className="flex flex-col md:flex-row min-h-[100dvh] bg-gray-50">
         <Sidebar currentTab={tab} setTab={(t) => { setTab(t); setIsSidebarOpen(false); }} currentUser={currentUser} onLogout={handleLogout} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         
-        <div className="flex-1 md:ml-60 flex flex-col min-h-screen">
+        <div className="flex-1 flex flex-col min-h-screen">
           <TopNavbar 
             keyword={keyword} setKeyword={setKeyword} 
             unreadCount={myUnreadNotifs.length} 
             toggleNotifs={() => setShowNotifModal(true)} 
             currentUser={currentUser}
             onLogout={handleLogout}
+            toggleSidebar={() => setIsSidebarOpen(true)}
           />
           <MobileHeader 
             unreadCount={myUnreadNotifs.length} 
