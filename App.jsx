@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Home, Search, PlusCircle, MessageCircle, User,
-  MapPin, Eye, EyeOff, X, Bell, LogOut, Settings
+  MapPin, Eye, EyeOff, X, Bell, LogOut, Settings, Menu
 } from 'lucide-react';
 
 /* Font Loader */
@@ -714,11 +714,14 @@ const ReportModal = ({ targetUserId, targetName, showToast, onClose }) => {
 
 
 /* Layout Components */
-const Sidebar = ({ currentTab, setTab, currentUser, onLogout }) => (
-  <div className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-white border-r border-gray-200 z-30">
-    <div className="h-14 flex items-center justify-center border-b border-gray-100">
-      <div className="text-[#F58220] font-black text-xl tracking-wider">KKU <span className="text-gray-800">PT</span></div>
-    </div>
+const Sidebar = ({ currentTab, setTab, currentUser, onLogout, isOpen, onClose }) => (
+  <>
+    {isOpen && <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={onClose} />}
+    <div className={`flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-white border-r border-gray-200 z-50 transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className="h-14 flex items-center justify-between px-4 border-b border-gray-100 md:justify-center">
+        <div className="text-[#F58220] font-black text-xl tracking-wider">KKU <span className="text-gray-800">PT</span></div>
+        <button className="md:hidden text-gray-400 hover:text-gray-600" onClick={onClose}><X size={20}/></button>
+      </div>
     <div className="flex-1 py-4 space-y-1">
       {[
         { id: "home", icon: Home, label: "หน้าแรก" },
@@ -751,6 +754,7 @@ const Sidebar = ({ currentTab, setTab, currentUser, onLogout }) => (
       </button>
     </div>
   </div>
+  </>
 );
 
 const TopNavbar = ({ keyword, setKeyword, unreadCount, toggleNotifs, currentUser, onLogout }) => {
@@ -794,9 +798,14 @@ const TopNavbar = ({ keyword, setKeyword, unreadCount, toggleNotifs, currentUser
   );
 };
 
-const MobileHeader = ({ unreadCount, toggleNotifs }) => (
+const MobileHeader = ({ unreadCount, toggleNotifs, toggleSidebar }) => (
   <div className="md:hidden h-14 bg-white border-b border-gray-200 sticky top-0 z-30 flex items-center justify-between px-4">
-    <div className="text-[#F58220] font-black text-lg tracking-wider">KKU <span className="text-gray-800 text-base">PART-TIME</span></div>
+    <div className="flex items-center gap-3">
+      <button onClick={toggleSidebar} className="p-1 text-gray-600">
+        <Menu size={24} />
+      </button>
+      <div className="text-[#F58220] font-black text-lg tracking-wider">KKU <span className="text-gray-800 text-base">PART-TIME</span></div>
+    </div>
     <button onClick={toggleNotifs} className="relative p-2 text-gray-600">
       <Bell size={24} />
       {unreadCount > 0 && <span className="absolute top-1 right-1.5 w-3 h-3 bg-red-500 border-2 border-white rounded-full text-[0px]">unread</span>}
@@ -1377,6 +1386,7 @@ export default function App() {
   const [keyword, setKeyword] = useState("");
   const [activeCat, setActiveCat] = useState("ทั้งหมด");
   const [notifsEnabled, setNotifsEnabled] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Modals & UI states
   const [toastMsg, setToastMsg] = useState("");
@@ -1570,7 +1580,7 @@ export default function App() {
       )}
 
       <div className="flex flex-col md:flex-row min-h-[100dvh] bg-gray-50">
-        <Sidebar currentTab={tab} setTab={setTab} currentUser={currentUser} onLogout={handleLogout} />
+        <Sidebar currentTab={tab} setTab={(t) => { setTab(t); setIsSidebarOpen(false); }} currentUser={currentUser} onLogout={handleLogout} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         
         <div className="flex-1 md:ml-60 flex flex-col min-h-screen">
           <TopNavbar 
@@ -1583,6 +1593,7 @@ export default function App() {
           <MobileHeader 
             unreadCount={myUnreadNotifs.length} 
             toggleNotifs={() => setShowNotifModal(true)} 
+            toggleSidebar={() => setIsSidebarOpen(true)}
           />
 
           {notifsEnabled && myUnreadNotifs.length > 0 && (
