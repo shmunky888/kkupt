@@ -9,6 +9,9 @@ import Btn from '../components/ui/Btn.jsx';
 
 const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onManage, onViewDetails }) => {
   const isEmployer = currentUser.role === "employer";
+  const pendingApps = apps.filter(a => a.userId === currentUser.id && a.workStatus !== "completed");
+  const completedApps = apps.filter(a => a.userId === currentUser.id && a.workStatus === "completed");
+  const myPostedJobs = jobs.filter(j => j.employerId === currentUser.id && j.status !== "deleted");
 
   return (
     <div className="flex flex-col md:flex-row gap-6 max-w-5xl mx-auto items-start">
@@ -40,9 +43,9 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center"><span className="text-xl mr-2">⏳</span> งานที่สมัครแล้ว</h3>
               <div className="space-y-4">
-                {apps.filter(a => a.userId === currentUser.id && a.workStatus !== "completed").length === 0 ? (
+                {pendingApps.length === 0 ? (
                   <p className="text-gray-500 text-sm py-4 text-center">ยังไม่มีงานที่สมัคร</p>
-                ) : apps.filter(a => a.userId === currentUser.id && a.workStatus !== "completed").sort((a,b)=>b.appliedAt-a.appliedAt).map(a => {
+                ) : pendingApps.sort((a,b)=>b.appliedAt-a.appliedAt).map(a => {
                   const j = jobs.find(x => x.id === a.jobId);
                   if (!j) return null;
                   return (
@@ -71,9 +74,9 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center"><span className="text-xl mr-2">✅</span> ประวัติการทำงาน</h3>
               <div className="space-y-4">
-                {apps.filter(a => a.userId === currentUser.id && a.workStatus === "completed").length === 0 ? (
+                {completedApps.length === 0 ? (
                   <p className="text-gray-500 text-sm py-4 text-center">ยังไม่มีประวัติการทำงาน</p>
-                ) : apps.filter(a => a.userId === currentUser.id && a.workStatus === "completed").sort((a,b)=>b.completedAt-a.completedAt).map(a => {
+                ) : completedApps.sort((a,b)=>b.completedAt-a.completedAt).map(a => {
                   const j = jobs.find(x => x.id === a.jobId);
                   if (!j) return null;
                   return (
@@ -115,9 +118,9 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
             <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center"><span className="text-xl mr-2">📌</span> งานที่ลงประกาศ</h3>
             <div className="space-y-4">
-              {jobs.filter(j => j.employerId === currentUser.id && j.status !== "deleted").length === 0 ? (
+              {myPostedJobs.length === 0 ? (
                 <p className="text-gray-500 text-sm py-4 text-center">ยังไม่มีงานที่ลงประกาศ</p>
-              ) : jobs.filter(j => j.employerId === currentUser.id && j.status !== "deleted").sort((a,b)=>b.postedAt-a.postedAt).map(j => (
+              ) : myPostedJobs.sort((a,b)=>b.postedAt-a.postedAt).map(j => (
                 <div key={j.id} className="p-4 border border-gray-100 rounded-2xl bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-blue-200 transition-colors">
                   <div>
                     <div className="font-bold text-gray-800 mb-2">{j.title}</div>

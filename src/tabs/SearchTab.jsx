@@ -24,16 +24,17 @@ const SearchTab = ({ jobs, apps, currentUser, onApply, onWithdraw, onOpenChat, o
 
   const toggleDay = d => setDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
 
-  const filtered = jobs
-    .filter(j => j.status === "active")
-    .filter(j => !keyword || j.title.toLowerCase().includes(keyword.toLowerCase()) || j.company.toLowerCase().includes(keyword.toLowerCase()))
-    .filter(j => !category || category === "ทั้งหมด" || j.category === category)
-    .filter(j => !wageMin || j.wage >= Number(wageMin))
-    .filter(j => !wageType || wageType === "ทั้งหมด" || j.wageType === wageType)
-    .filter(j => !days.length || days.every(d => j.days.includes(d)))
-    .filter(j => !timeFrom || j.startTime >= timeFrom)
-    .filter(j => !timeTo || j.endTime <= timeTo)
-    .filter(j => currentUser.role !== 'employer' || j.employerId === currentUser.id);
+  const filtered = jobs.filter(j => 
+    j.status === "active" &&
+    (!keyword || j.title.toLowerCase().includes(keyword.toLowerCase()) || j.company.toLowerCase().includes(keyword.toLowerCase())) &&
+    (!category || category === "ทั้งหมด" || j.category === category) &&
+    (!wageMin || j.wage >= Number(wageMin)) &&
+    (!wageType || wageType === "ทั้งหมด" || j.wageType === wageType) &&
+    (!days.length || days.every(d => j.days.includes(d))) &&
+    (!timeFrom || j.startTime >= timeFrom) &&
+    (!timeTo || j.endTime <= timeTo) &&
+    (currentUser.role !== 'employer' || j.employerId === currentUser.id)
+  );
 
   return (
     <div className="space-y-6">
