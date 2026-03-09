@@ -50,9 +50,9 @@ const SettingsModal = ({ currentUser, users, syncUsers, onClose, onLogout, notif
           </div>
           {showPwd && (
             <div className="space-y-3 pt-2">
-              <input type="password" placeholder="รหัสผ่านปัจจุบัน" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F58220]" value={pwd.current} onChange={e => setPwd({...pwd, current: e.target.value})} />
-              <input type="password" placeholder="รหัสผ่านใหม่ (อักขระ 6 ตัวขึ้นไป)" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F58220]" value={pwd.new} onChange={e => setPwd({...pwd, new: e.target.value})} />
-              <input type="password" placeholder="ยืนยันรหัสผ่านใหม่" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F58220]" value={pwd.confirm} onChange={e => setPwd({...pwd, confirm: e.target.value})} />
+              <input type="password" placeholder="รหัสผ่านปัจจุบัน" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F58220]" value={pwd.current} onChange={e => setPwd(prev => ({...prev, current: e.target.value}))} />
+              <input type="password" placeholder="รหัสผ่านใหม่ (อักขระ 6 ตัวขึ้นไป)" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F58220]" value={pwd.new} onChange={e => setPwd(prev => ({...prev, new: e.target.value}))} />
+              <input type="password" placeholder="ยืนยันรหัสผ่านใหม่" className="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none focus:border-[#F58220]" value={pwd.confirm} onChange={e => setPwd(prev => ({...prev, confirm: e.target.value}))} />
               <Btn full color="#F58220" onClick={handleSavePwd} disabled={!pwd.current || !pwd.new || !pwd.confirm}>บันทึกรหัสผ่าน</Btn>
             </div>
           )}

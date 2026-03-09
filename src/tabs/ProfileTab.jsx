@@ -89,25 +89,17 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
                         <div className="text-xs text-gray-400">เสร็จสิ้นเมื่อ: {new Date(a.completedAt).toLocaleDateString('th-TH', { year:'numeric', month:'short', day:'numeric' })}</div>
                       </div>
 
-                      {a.employerReview && (
-                        <div className="bg-white p-3 rounded-xl border border-orange-100 relative">
-                          <div className="text-xs font-bold text-[#F58220] mb-1">นายจ้างรีวิว:</div>
+                      {a.employerReview ? (
+                        <div className="bg-white p-3 rounded-xl border border-orange-100 relative mt-3">
+                          <div className="text-xs font-bold text-[#F58220] mb-1">ความเห็นจากนายจ้าง:</div>
                           <StarRating value={a.employerReview.rating} readonly size={14} />
                           <p className="text-sm text-gray-600 mt-1 italic">"{a.employerReview.text}"</p>
                         </div>
+                      ) : (
+                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 mt-3 text-center">
+                          <p className="text-xs text-gray-400">รอรับการรีวิวจากนายจ้าง</p>
+                        </div>
                       )}
-
-                      <div className="pt-2 border-t border-gray-100" onClick={e => e.stopPropagation()}>
-                        {a.employeeReview === null ? (
-                          <Btn small color="#F58220" outline onClick={() => window.alert("เปิด ReviewModal: " + a.id)}>✍️ เขียนรีวิว</Btn>
-                        ) : (
-                          <div>
-                            <div className="text-xs font-bold text-gray-600 mb-1">รีวิวของคุณ:</div>
-                            <StarRating value={a.employeeReview.rating} readonly size={14} />
-                            <p className="text-sm text-gray-600 mt-1">"{a.employeeReview.text}"</p>
-                          </div>
-                        )}
-                      </div>
                     </div>
                   );
                 })}

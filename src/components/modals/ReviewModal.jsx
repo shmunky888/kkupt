@@ -6,19 +6,19 @@ import Modal from '../ui/Modal.jsx';
 import Btn from '../ui/Btn.jsx';
 import StarRating from '../ui/StarRating.jsx';
 
-const ReviewModal = ({ appId, jobTitle, apps, syncApps, onClose, showToast }) => {
+const ReviewModal = ({ appId, applicantName, apps, syncApps, onClose, showToast }) => {
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
 
   const handleSave = () => {
     if (rating === 0) return showToast("กรุณาให้คะแนนดาว");
-    syncApps(apps.map(a => a.id === appId ? { ...a, employeeReview: { rating, text } } : a));
+    syncApps(apps.map(a => a.id === appId ? { ...a, employerReview: { rating, text } } : a));
     showToast("บันทึกรีวิวแล้ว!");
     onClose();
   };
 
   return (
-    <Modal title={`รีวิวงาน: ${jobTitle}`} onClose={onClose}>
+    <Modal title={`รีวิวพนักงาน: ${applicantName}`} onClose={onClose}>
       <div className="flex flex-col items-center space-y-6">
         <div className="text-center">
           <p className="text-sm text-gray-500 mb-2">ให้คะแนนความพึงพอใจ</p>
