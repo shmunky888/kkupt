@@ -13,11 +13,6 @@ const Sidebar = ({ currentTab, setTab, currentUser, onLogout, isOpen, onClose })
     {/* Sidebar Container */}
     <div className={`flex flex-col fixed left-0 top-14 bottom-0 w-60 bg-white border-r border-gray-200 transition-transform duration-300 z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
-      {/* Mobile Close Button Area */}
-      <div className="h-14 flex items-center justify-end px-4 border-b border-gray-100 md:hidden">
-        <button className="text-gray-400 hover:text-gray-600" onClick={onClose}><X size={20}/></button>
-      </div>
-
       <div className="flex-1 py-4 space-y-1">
         {[
           { id: "home", icon: Home, label: "หน้าแรก" },
