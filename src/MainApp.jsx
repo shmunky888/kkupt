@@ -250,23 +250,24 @@ function MainApp() {
         </Modal>
       )}
 
-      <div className="flex flex-col md:flex-row min-h-[100dvh] bg-gray-50">
+      <TopNavbar
+        keyword={keyword} setKeyword={setKeyword}
+        unreadCount={myUnreadNotifs.length}
+        toggleNotifs={() => setShowNotifModal(true)}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        toggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+      />
+      <MobileHeader
+        unreadCount={myUnreadNotifs.length}
+        toggleNotifs={() => setShowNotifModal(true)}
+        toggleSidebar={() => setIsSidebarOpen(prev => !prev)}
+      />
+
+      <div className="flex flex-col md:flex-row min-h-[100dvh] pt-14 bg-gray-50">
         <Sidebar currentTab={tab} setTab={(t) => { setTab(t); setIsSidebarOpen(window.innerWidth >= 768); }} currentUser={currentUser} onLogout={handleLogout} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-        <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 w-full ${isSidebarOpen ? 'md:ml-60' : 'ml-0'}`}>
-          <TopNavbar
-            keyword={keyword} setKeyword={setKeyword}
-            unreadCount={myUnreadNotifs.length}
-            toggleNotifs={() => setShowNotifModal(true)}
-            currentUser={currentUser}
-            onLogout={handleLogout}
-            toggleSidebar={() => setIsSidebarOpen(prev => !prev)}
-          />
-          <MobileHeader
-            unreadCount={myUnreadNotifs.length}
-            toggleNotifs={() => setShowNotifModal(true)}
-            toggleSidebar={() => setIsSidebarOpen(prev => !prev)}
-          />
+        <div className={`flex-1 flex flex-col transition-all duration-300 w-full ${isSidebarOpen ? 'md:ml-60' : 'ml-0'}`}>
 
           {notifsEnabled && myUnreadNotifs.length > 0 && (
             <div

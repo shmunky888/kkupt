@@ -13,7 +13,7 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
   return (
     <div className="flex flex-col md:flex-row gap-6 max-w-5xl mx-auto items-start">
       {/* Left Card */}
-      <div className="w-full md:w-80 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm sticky top-20 text-center shrink-0">
+      <div className="w-full md:w-80 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm sticky top-6 text-center shrink-0">
         <div className="flex justify-center mb-4"><AvatarCircle name={currentUser.name} size={80} /></div>
         <h2 className="text-2xl font-bold text-gray-800">{currentUser.name}</h2>
         <p className="text-gray-500 text-sm mb-3">{currentUser.email}</p>

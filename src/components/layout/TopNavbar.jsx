@@ -8,13 +8,12 @@ import AvatarCircle from '../ui/AvatarCircle.jsx';
 const TopNavbar = ({ keyword, setKeyword, unreadCount, toggleNotifs, currentUser, onLogout, toggleSidebar }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   return (
-    <div className="hidden md:flex h-14 bg-white border-b border-gray-200 sticky top-0 z-20 items-center justify-between px-6">
+    <div className="hidden md:flex h-14 bg-white border-b border-gray-200 fixed top-0 w-full z-50 items-center justify-between px-6">
       <div className="flex items-center gap-4">
         <button onClick={toggleSidebar} className="p-1 text-gray-500 hover:text-gray-800 transition-colors">
           <Menu size={20} />
         </button>
         <div className="text-[#F58220] font-black text-lg tracking-wider">KKU PT</div>
-        <div className="text-gray-500 text-sm font-semibold tracking-wider border-l border-gray-200 pl-4 hidden md:block">PART-TIME</div>
       </div>
       {currentUser.role !== 'employer' && (
         <div className="flex-1 max-w-md relative mx-4">
@@ -29,6 +28,7 @@ const TopNavbar = ({ keyword, setKeyword, unreadCount, toggleNotifs, currentUser
         </div>
       )}
       <div className="flex items-center gap-4">
+        <div className="text-gray-500 text-[10px] sm:text-xs font-semibold tracking-wider hidden sm:block mr-2">PART-TIME</div>
         <button onClick={toggleNotifs} className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full">
           <Bell size={20} />
           {unreadCount > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full text-[0px]">unread</span>}

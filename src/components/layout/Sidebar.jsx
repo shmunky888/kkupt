@@ -8,15 +8,14 @@ import AvatarCircle from '../ui/AvatarCircle.jsx';
 const Sidebar = ({ currentTab, setTab, currentUser, onLogout, isOpen, onClose }) => (
   <>
     {/* Mobile Overlay */}
-    {isOpen && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={onClose} />}
+    {isOpen && <div className="md:hidden fixed inset-0 bg-black/50 z-40 top-14" onClick={onClose} />}
 
     {/* Sidebar Container */}
-    <div className={`flex flex-col fixed left-0 top-0 bottom-0 w-60 bg-white border-r border-gray-200 transition-transform duration-300 z-50 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <div className={`flex flex-col fixed left-0 top-14 bottom-0 w-60 bg-white border-r border-gray-200 transition-transform duration-300 z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
 
-      {/* Header */}
-      <div className="h-14 flex items-center justify-between md:justify-center px-4 md:px-0 border-b border-gray-100">
-        <div className="text-[#F58220] font-black text-xl tracking-wider">KKU <span className="text-gray-800">PT</span></div>
-        <button className="md:hidden text-gray-400 hover:text-gray-600" onClick={onClose}><X size={20}/></button>
+      {/* Mobile Close Button Area */}
+      <div className="h-14 flex items-center justify-end px-4 border-b border-gray-100 md:hidden">
+        <button className="text-gray-400 hover:text-gray-600" onClick={onClose}><X size={20}/></button>
       </div>
 
       <div className="flex-1 py-4 space-y-1">
@@ -40,13 +39,7 @@ const Sidebar = ({ currentTab, setTab, currentUser, onLogout, isOpen, onClose })
       </div>
 
       <div className="p-4 border-t border-gray-100">
-        <div className="flex items-center gap-3 mb-4">
-          <AvatarCircle name={currentUser.name} size={40} />
-          <div className="overflow-hidden">
-            <div className="font-bold text-sm text-gray-800 truncate">{currentUser.name}</div>
-            <div className="text-xs text-gray-500">{currentUser.role === 'employer' ? 'นายจ้าง' : 'นักศึกษา'}</div>
-          </div>
-        </div>
+
         <button onClick={onLogout} className="flex items-center text-red-500 font-medium text-sm hover:underline">
           <LogOut size={16} className="mr-2" /> ออกจากระบบ
         </button>
