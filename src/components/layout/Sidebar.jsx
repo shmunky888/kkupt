@@ -29,7 +29,7 @@ const Sidebar = ({ currentTab, setTab, currentUser, onLogout, isOpen, onClose })
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`w-full flex items-center px-6 py-3 font-medium transition-colors ${currentTab === t.id ? 'bg-orange-50 text-[#F58220] border-l-4' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'}`}
+            className={`w-full flex items-center px-4 py-3 font-medium transition-colors ${currentTab === t.id ? 'bg-orange-50 text-[#F58220] border-l-4' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'}`}
             style={currentTab === t.id ? { borderColor: "#F58220", color: "#F58220" } : {}}
           >
             <t.icon size={20} className="mr-3" />
