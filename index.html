@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KKU Part-Time (Test Environment)</title>
-  
+  <title>KKU Part-Time</title>
+
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
+
   <!-- Babel Standalone (for transpiling JSX in the browser) -->
   <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
-  
-  <!-- Import Map to resolve bare imports to ESM modules -->
+
+  <!-- Import Map to resolve bare package imports -->
   <script type="importmap">
     {
       "imports": {
@@ -33,33 +33,111 @@
     import React from 'react';
     import { createRoot } from 'react-dom/client';
 
+    /**
+     * Multi-file Babel module loader.
+     *
+     * Blob URLs have no base path, so relative imports inside a transpiled blob
+     * URL fail at runtime. This loader solves the problem by:
+     *   1. Declaring every src/ file that the app uses.
+     *   2. Fetching and Babel-transpiling each file into its own blob URL.
+     *   3. Rewriting import specifiers in the transpiled source so relative
+     *      paths become the pre-built blob URLs.
+     *   4. Importing the root App blob URL to start the application.
+     */
+
+    // ── 1. Manifest: ordered list of every module the app uses ──────────────
+    //   Key   : the relative path as it appears in import statements
+    //   Value : the actual file path to fetch (same here, relative to origin)
+    const MANIFEST = [
+      // — Data / Services —
+      'src/constants/data.js',
+      'src/services/storage.js',
+
+      // — UI Primitives —
+      'src/components/ui/FontLoader.jsx',
+      'src/components/ui/Btn.jsx',
+      'src/components/ui/StarRating.jsx',
+      'src/components/ui/Toast.jsx',
+      'src/components/ui/Modal.jsx',
+      'src/components/ui/AvatarCircle.jsx',
+      'src/components/ui/StatusBadge.jsx',
+      'src/components/ui/MapPreview.jsx',
+
+      // — Feature Components —
+      'src/components/jobs/JobCard.jsx',
+      'src/components/auth/PolicyModal.jsx',
+      'src/components/auth/AuthScreen.jsx',
+
+      // — Modals —
+      'src/components/modals/NotifModal.jsx',
+      'src/components/modals/SettingsModal.jsx',
+      'src/components/modals/EditProfileModal.jsx',
+      'src/components/modals/ReviewModal.jsx',
+      'src/components/modals/ManageJobModal.jsx',
+      'src/components/modals/ReportModal.jsx',
+
+      // — Layout —
+      'src/components/layout/Sidebar.jsx',
+      'src/components/layout/TopNavbar.jsx',
+      'src/components/layout/MobileHeader.jsx',
+      'src/components/layout/BottomTabBar.jsx',
+
+      // — Tabs —
+      'src/tabs/HomeTab.jsx',
+      'src/tabs/SearchTab.jsx',
+      'src/tabs/PostTab.jsx',
+      'src/tabs/ChatTab.jsx',
+      'src/tabs/ProfileTab.jsx',
+
+      // — Root —
+      'src/ErrorBoundary.jsx',
+      'src/MainApp.jsx',
+      'App.jsx',
+    ];
+
     async function loadReactApp() {
       try {
-        // Fetch the raw JSX component
-        const response = await fetch('./App.jsx?v=' + Date.now());
-        if (!response.ok) throw new Error("ไม่สามารถโหลดไฟล์ App.jsx ได้");
-        
-        const jsxCode = await response.text();
-        
-        // Transpile JSX to standard JavaScript, leaving ES Module imports intact
-        const jsCode = Babel.transform(jsxCode, {
-          presets: ['react']
-        }).code;
+        // ── 2. Build a registry: filePath → blobURL ───────────────────────
+        const registry = {};
 
-        // Create an ES Module dynamically using a Blob URL
-        const blob = new Blob([jsCode], { type: 'application/javascript' });
-        const blobUrl = URL.createObjectURL(blob);
+        for (const filePath of MANIFEST) {
+          const res = await fetch('./' + filePath + '?v=' + Date.now());
+          if (!res.ok) throw new Error(`Cannot load: ${filePath} (${res.status})`);
+          let src = await res.text();
 
-        // Dynamically import the transpiled blob
-        const AppMap = await import(blobUrl);
-        const App = AppMap.default;
+          // ── 3. Transpile JSX → JS ────────────────────────────────────────
+          src = Babel.transform(src, { presets: ['react'] }).code;
 
-        if (!App) throw new Error("App.jsx ไม่ได้ export default function App");
+          // ── 4. Rewrite relative import/export specifiers ─────────────────
+          //   e.g.  import X from './Btn.jsx'
+          //      →  import X from '<blob:...>'
+          src = src.replace(
+            /(import\s[^'"]*\s*from\s*|export\s+\{[^}]*\}\s+from\s*|import\s*\()\s*['"]([^'"]+)['"]/g,
+            (match, prefix, specifier) => {
+              if (specifier.startsWith('.')) {
+                // Resolve relative specifier against the current file's directory
+                const dir = filePath.substring(0, filePath.lastIndexOf('/') + 1);
+                const resolved = resolveRelative(dir, specifier);
+                if (registry[resolved]) {
+                  return `${prefix}'${registry[resolved]}'`;
+                }
+              }
+              return match; // leave bare specifiers (react, lucide-react) unchanged
+            }
+          );
 
-        // Render the app
+          const blob = new Blob([src], { type: 'application/javascript' });
+          registry[filePath] = URL.createObjectURL(blob);
+        }
+
+        // ── 5. Import the root entry-point blob and mount ─────────────────
+        const AppModule = await import(registry['App.jsx']);
+        const App = AppModule.default;
+        if (!App) throw new Error('App.jsx ไม่ได้ export default function App');
+
         const root = createRoot(document.getElementById('root'));
         root.render(React.createElement(App));
-        
+
       } catch (error) {
         document.getElementById('root').innerHTML = `
           <div class="p-8 max-w-lg mx-auto mt-20 bg-red-50 text-red-600 rounded-2xl shadow-sm border border-red-200">
@@ -69,6 +147,22 @@
         `;
         console.error(error);
       }
+    }
+
+    /**
+     * Resolve a relative path specifier against a base directory.
+     * e.g. resolveRelative('src/components/ui/', '../jobs/JobCard.jsx')
+     *      → 'src/components/jobs/JobCard.jsx'
+     */
+    function resolveRelative(baseDir, relative) {
+      // Normalise: remove ./ prefix
+      const parts = (baseDir + relative).split('/');
+      const out = [];
+      for (const p of parts) {
+        if (p === '..') out.pop();
+        else if (p !== '.') out.push(p);
+      }
+      return out.join('/');
     }
 
     loadReactApp();
