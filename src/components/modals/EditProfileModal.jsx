@@ -24,16 +24,16 @@ const EditProfileModal = ({ currentUser, users, syncUsers, setCurrentUser, onClo
       <div className="space-y-4">
         <div>
           <label className="text-sm font-bold text-gray-700 mb-1 block">ชื่อ-นามสกุล</label>
-          <input type="text" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={data.name} onChange={e => setData({...data, name: e.target.value})} />
+          <input type="text" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={data.name} onChange={e => setData(prev => ({...prev, name: e.target.value}))} />
         </div>
         <div>
           <label className="text-sm font-bold text-gray-700 mb-1 block">อีเมล</label>
-          <input type="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={data.email} onChange={e => setData({...data, email: e.target.value})} />
+          <input type="email" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={data.email} onChange={e => setData(prev => ({...prev, email: e.target.value}))} />
         </div>
         {currentUser.role === "employee" && (
           <div>
             <label className="text-sm font-bold text-gray-700 mb-1 block">ทักษะของคุณ (คั่นด้วยจุลภาค)</label>
-            <input type="text" placeholder="เช่น สื่อสาร, ถ่ายรูป" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={data.skills} onChange={e => setData({...data, skills: e.target.value})} />
+            <input type="text" placeholder="เช่น สื่อสาร, ถ่ายรูป" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={data.skills} onChange={e => setData(prev => ({...prev, skills: e.target.value}))} />
           </div>
         )}
         <div className="pt-4 border-t border-gray-100">

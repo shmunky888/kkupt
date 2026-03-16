@@ -85,7 +85,7 @@ const SearchTab = ({ jobs, apps, currentUser, onApply, onWithdraw, onOpenChat, o
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filtered.map(job => (
-              <JobCard key={job.id} job={job} myApp={apps.find(a => a.jobId === job.id && a.userId === currentUser.id)} isOwner={currentUser.id === job.employerId} onApply={onApply} onWithdraw={onWithdraw} onOpenChat={onOpenChat} onManage={onManage} currentUser={currentUser} />
+              <JobCard key={job.id} job={job} myApp={apps.find(a => a.jobId === job.id && a.userId === currentUser.id)} isOwner={currentUser.id === job.employerId} onApply={onApply} onWithdraw={onWithdraw} onOpenChat={onOpenChat} onManage={onManage} currentUser={currentUser} apps={apps} />
             ))}
           </div>
         )}

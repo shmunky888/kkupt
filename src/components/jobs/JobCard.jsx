@@ -7,7 +7,9 @@ import AvatarCircle from '../ui/AvatarCircle.jsx';
 import MapPreview from '../ui/MapPreview.jsx';
 import Btn from '../ui/Btn.jsx';
 
-const JobCard = ({ job, myApp, isOwner, onApply, onWithdraw, onOpenChat, onManage, currentUser }) => {
+const JobCard = ({ job, myApp, isOwner, onApply, onWithdraw, onOpenChat, onManage, currentUser, apps = [] }) => {
+  const acceptedCount = apps.filter(a => a.jobId === job.id && a.applicationStatus === "accepted").length;
+  const isFull = job.slotsNeeded > 0 && acceptedCount >= job.slotsNeeded;
   let badgeClass = "bg-gray-100 text-gray-700";
   if (job.category === "เด็กเสิร์ฟ") badgeClass = "bg-orange-100 text-orange-700";
   else if (job.category === "ถ่ายรูป") badgeClass = "bg-purple-100 text-purple-700";
@@ -44,6 +46,11 @@ const JobCard = ({ job, myApp, isOwner, onApply, onWithdraw, onOpenChat, onManag
         </div>
         <div className="flex items-center gap-2 text-sm mt-2">
           <span className="font-bold text-lg" style={{ color: "#F58220" }}>{job.wage} บาท/{job.wageType}</span>
+          {job.slotsNeeded > 0 && (
+            isFull
+              ? <span className="ml-auto bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">FULL 🔒</span>
+              : <span className="ml-auto bg-green-50 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full">👥 {acceptedCount}/{job.slotsNeeded} คน</span>
+          )}
         </div>
       </div>
 
@@ -56,7 +63,9 @@ const JobCard = ({ job, myApp, isOwner, onApply, onWithdraw, onOpenChat, onManag
           <>
             <Btn outline small onClick={() => onOpenChat(job)}>ติดต่อ</Btn>
             {!myApp ? (
-              <Btn full small color="#F58220" onClick={() => onApply(job)}>สมัครงาน</Btn>
+              isFull
+                ? <Btn full small disabled>FULL 🔒</Btn>
+                : <Btn full small color="#F58220" onClick={() => onApply(job)}>สมัครงาน</Btn>
             ) : myApp.applicationStatus === "pending" ? (
               <Btn full small onClick={() => onWithdraw(myApp.id)}>ยกเลิกการสมัคร</Btn>
             ) : myApp.applicationStatus === "accepted" ? (

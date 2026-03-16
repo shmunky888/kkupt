@@ -11,7 +11,7 @@ const PostTab = ({ currentUser, jobs, syncJobs, showToast }) => {
   const [form, setForm] = useState({
     company: currentUser?.name || "", title: "", category: "เด็กเสิร์ฟ", desc: "",
     location: "", mapLink: "", lat: null, lng: null,
-    days: [], startTime: "", endTime: "", wage: "", wageType: "ชั่วโมง"
+    days: [], startTime: "", endTime: "", wage: "", wageType: "ชั่วโมง", slotsNeeded: ""
   });
 
   if (currentUser?.role !== "employer") {
@@ -41,11 +41,12 @@ const PostTab = ({ currentUser, jobs, syncJobs, showToast }) => {
     if (!form.company || !form.title || !form.location || !form.startTime || !form.endTime || !form.wage) return showToast("กรุณากรอกข้อมูลที่มี * ให้ครบ");
     if (!form.days.length) return showToast("กรุณาเลือกอย่างน้อย 1 วัน");
     if (form.startTime >= form.endTime) return showToast("เวลาเริ่มต้องน้อยกว่าเวลาสิ้นสุด");
+    if (!form.slotsNeeded || Number(form.slotsNeeded) < 1) return showToast("กรุณาระบุจำนวนที่รับอย่างน้อย 1 คน");
 
-    const newJob = { id: "j" + Date.now(), employerId: currentUser.id, ...form, status: "active", postedAt: Date.now() };
+    const newJob = { id: "j" + Date.now(), employerId: currentUser.id, ...form, slotsNeeded: Number(form.slotsNeeded), status: "active", postedAt: Date.now() };
     syncJobs([newJob, ...jobs]);
     showToast("โพสต์งานสำเร็จ! 🎉");
-    setForm({ company: currentUser.name, title: "", category: "เด็กเสิร์ฟ", desc: "", location: "", mapLink: "", lat: null, lng: null, days: [], startTime: "", endTime: "", wage: "", wageType: "ชั่วโมง" });
+    setForm({ company: currentUser.name, title: "", category: "เด็กเสิร์ฟ", desc: "", location: "", mapLink: "", lat: null, lng: null, days: [], startTime: "", endTime: "", wage: "", wageType: "ชั่วโมง", slotsNeeded: "" });
   };
 
   return (
@@ -84,6 +85,20 @@ const PostTab = ({ currentUser, jobs, syncJobs, showToast }) => {
             <div className="flex gap-4">
               <div className="flex-1"><input type="number" placeholder="ตัวเลข *" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={form.wage} onChange={e => setForm(prev => ({...prev, wage: e.target.value}))} /></div>
               <div className="flex-1"><select className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]" value={form.wageType} onChange={e => setForm(prev => ({...prev, wageType: e.target.value}))}><option value="ชั่วโมง">ชั่วโมง</option><option value="วัน">วัน</option><option value="งาน">งาน</option></select></div>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-gray-100">
+            <h4 className="font-bold text-gray-800 mb-3">จำนวนที่รับ</h4>
+            <div>
+              <label className="text-sm font-bold text-gray-700 mb-1 block">จำนวนคนที่ต้องการ *</label>
+              <input
+                type="number" min="1" placeholder="เช่น 3"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 outline-none focus:border-[#F58220]"
+                value={form.slotsNeeded}
+                onChange={e => setForm(prev => ({...prev, slotsNeeded: e.target.value}))}
+              />
+              <p className="text-xs text-gray-400 mt-1">เมื่อรับครบจำนวนนี้แล้ว ระบบจะปิดรับสมัครอัตโนมัติ</p>
             </div>
           </div>
 

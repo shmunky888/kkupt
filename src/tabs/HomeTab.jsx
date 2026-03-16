@@ -57,6 +57,7 @@ const HomeTab = ({ jobs, apps, currentUser, keyword, onApply, onWithdraw, onOpen
                 onOpenChat={onOpenChat}
                 onManage={onManage}
                 currentUser={currentUser}
+                apps={apps}
               />
             ))
           )}

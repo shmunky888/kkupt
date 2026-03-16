@@ -119,6 +119,11 @@ function MainApp() {
 
   const handleApply = useCallback((job) => {
     if (apps.find(a => a.jobId === job.id && a.userId === currentUser.id)) return;
+    const acceptedCount = apps.filter(a => a.jobId === job.id && a.applicationStatus === "accepted").length;
+    if (job.slotsNeeded > 0 && acceptedCount >= job.slotsNeeded) {
+      showToast("งานนี้รับครบแล้ว ไม่สามารถสมัครได้");
+      return;
+    }
     const newApp = {
       id: "a" + Date.now(), jobId: job.id, userId: currentUser.id, employerId: job.employerId,
       applicationStatus: "pending", workStatus: "pending", appliedAt: Date.now(),
@@ -232,7 +237,7 @@ function MainApp() {
       {showNotifModal && <NotifModal notifs={notifs} onClose={() => setShowNotifModal(false)} onClearAll={(uid) => { syncNotifs(notifs.filter(n => n.userId !== uid)); setShowNotifModal(false); }} currentUser={currentUser} syncNotifs={syncNotifs} />}
       {showSettingsModal && <SettingsModal currentUser={currentUser} users={users} syncUsers={syncUsers} onClose={() => setShowSettingsModal(false)} onLogout={handleLogout} notifsEnabled={notifsEnabled} setNotifsEnabled={setNotifsEnabled} showToast={showToast} />}
       {showEditProfileModal && <EditProfileModal currentUser={currentUser} users={users} syncUsers={syncUsers} setCurrentUser={setCurrentUser} onClose={() => setShowEditProfileModal(false)} showToast={showToast} />}
-      {reviewAppId && <ReviewModal appId={reviewAppId} jobTitle={jobs.find(j => j.id === apps.find(a => a.id === reviewAppId)?.jobId)?.title || ""} apps={apps} syncApps={syncApps} onClose={() => setReviewAppId(null)} showToast={showToast} />}
+      {reviewAppId && <ReviewModal appId={reviewAppId} applicantName={users.find(u => u.id === apps.find(a => a.id === reviewAppId)?.userId)?.name || ""} apps={apps} syncApps={syncApps} onClose={() => setReviewAppId(null)} showToast={showToast} />}
       {manageJobId && <ManageJobModal job={jobs.find(j => j.id === manageJobId)} apps={apps} users={users} syncApps={syncApps} addNotif={addNotif} showToast={showToast} onClose={() => setManageJobId(null)} handleDeleteJob={handleDeleteJob} />}
       {reportTarget && <ReportModal targetUserId={reportTarget.id} targetName={reportTarget.name} showToast={showToast} onClose={() => setReportTarget(null)} />}
       {viewJob && (
@@ -246,6 +251,7 @@ function MainApp() {
             onOpenChat={handleOpenChat}
             onManage={(j) => setManageJobId(j.id)}
             currentUser={currentUser}
+            apps={apps}
           />
         </Modal>
       )}

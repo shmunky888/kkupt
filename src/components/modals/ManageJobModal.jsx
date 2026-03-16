@@ -30,6 +30,16 @@ const ManageJobModal = ({ job, apps, users, syncApps, addNotif, showToast, onClo
       <div className="space-y-4">
         <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 mb-4 flex justify-between items-center">
           <div><p className="text-sm font-bold text-gray-700">สถานะโพสต์</p><StatusBadge status={job.status} /></div>
+          <div className="text-center">
+            {job.slotsNeeded > 0 && (
+              <>
+                <p className="text-sm font-bold text-gray-700">รับแล้ว</p>
+                <p className="font-bold text-xl" style={{ color: jobApps.filter(a => a.applicationStatus === "accepted").length >= job.slotsNeeded ? "#EF4444" : "#22C55E" }}>
+                  {jobApps.filter(a => a.applicationStatus === "accepted").length}/{job.slotsNeeded} คน
+                </p>
+              </>
+            )}
+          </div>
           <div className="text-right"><p className="text-sm font-bold text-gray-700">ผู้สมัครทั้งหมด</p><p className="text-[#F58220] font-bold text-xl">{jobApps.length} คน</p></div>
         </div>
 
@@ -56,7 +66,14 @@ const ManageJobModal = ({ job, apps, users, syncApps, addNotif, showToast, onClo
                 ) : a.applicationStatus === "accepted" && a.workStatus !== "completed" ? (
                   <Btn small color="#22C55E" onClick={() => handleMarkComplete(a.id)}>✓ งานเสร็จแล้ว</Btn>
                 ) : a.workStatus === "completed" ? (
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">เสร็จสิ้น</span>
+                  <div className="flex flex-col gap-2 items-end">
+                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold mb-1">เสร็จสิ้น</span>
+                    {!a.employerReview ? (
+                      <Btn small color="#F58220" outline onClick={() => window.alert("เปิด ReviewModal: " + a.id)}>✍️ รีวิวลูกจ้าง</Btn>
+                    ) : (
+                      <span className="text-xs font-bold text-green-600">✓ รีวิวแล้ว</span>
+                    )}
+                  </div>
                 ) : (
                   <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">ปฏิเสธแล้ว</span>
                 )}
