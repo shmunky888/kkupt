@@ -7,7 +7,7 @@ import { DAY_MAP, CATEGORIES } from '../constants/data.js';
 import JobCard from '../components/jobs/JobCard.jsx';
 import Btn from '../components/ui/Btn.jsx';
 
-const SearchTab = ({ jobs, apps, currentUser, onApply, onWithdraw, onOpenChat, onManage }) => {
+const SearchTab = ({ jobs, apps, currentUser, onApply, onWithdraw, onOpenChat, onManage, onViewProfile }) => {
   const [keyword, setKeyword] = useState("");
   const [category, setCategory] = useState("ทั้งหมด");
   const [wageMin, setWageMin] = useState("");
@@ -85,7 +85,7 @@ const SearchTab = ({ jobs, apps, currentUser, onApply, onWithdraw, onOpenChat, o
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filtered.map(job => (
-              <JobCard key={job.id} job={job} myApp={apps.find(a => a.jobId === job.id && a.userId === currentUser.id)} isOwner={currentUser.id === job.employerId} onApply={onApply} onWithdraw={onWithdraw} onOpenChat={onOpenChat} onManage={onManage} currentUser={currentUser} apps={apps} />
+              <JobCard key={job.id} job={job} myApp={apps.find(a => a.jobId === job.id && a.userId === currentUser.id)} isOwner={currentUser.id === job.employerId} onApply={onApply} onWithdraw={onWithdraw} onOpenChat={onOpenChat} onManage={onManage} currentUser={currentUser} apps={apps} onViewProfile={onViewProfile} />
             ))}
           </div>
         )}

@@ -7,7 +7,7 @@ import StatusBadge from '../ui/StatusBadge.jsx';
 import Modal from '../ui/Modal.jsx';
 import Btn from '../ui/Btn.jsx';
 
-const ManageJobModal = ({ job, apps, users, syncApps, addNotif, showToast, onClose, handleDeleteJob }) => {
+const ManageJobModal = ({ job, apps, users, syncApps, addNotif, showToast, onClose, handleDeleteJob, onViewProfile }) => {
   const jobApps = apps.filter(a => a.jobId === job.id);
 
   const handleAcceptReject = (appId, action) => {
@@ -50,12 +50,14 @@ const ManageJobModal = ({ job, apps, users, syncApps, addNotif, showToast, onClo
           return (
             <div key={a.id} className="p-4 border border-gray-100 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <AvatarCircle name={u.name} size={40} />
-                <div>
-                  <div className="font-bold text-gray-800 text-sm">{u.name}</div>
-                  <div className="text-xs text-gray-500">สมัครเมื่อ {new Date(a.appliedAt).toLocaleDateString('th-TH')}</div>
-                  {u.skills.length > 0 && <div className="text-xs text-blue-500 mt-1">{u.skills.join(', ')}</div>}
-                </div>
+                <button onClick={() => onViewProfile && onViewProfile(a.userId)} className="flex items-center gap-3 group text-left">
+                  <AvatarCircle name={u.name} size={40} />
+                  <div>
+                    <div className="font-bold text-gray-800 text-sm group-hover:text-[#F58220] transition-colors">{u.name}</div>
+                    <div className="text-xs text-gray-500">สมัครเมื่อ {new Date(a.appliedAt).toLocaleDateString('th-TH')}</div>
+                    {u.skills.length > 0 && <div className="text-xs text-blue-500 mt-1">{u.skills.join(', ')}</div>}
+                  </div>
+                </button>
               </div>
               <div className="flex flex-col gap-2 items-end shrink-0">
                 {a.applicationStatus === "pending" ? (

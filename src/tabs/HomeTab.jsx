@@ -6,7 +6,7 @@ import { Search } from 'lucide-react';
 import { CATEGORIES } from '../constants/data.js';
 import JobCard from '../components/jobs/JobCard.jsx';
 
-const HomeTab = ({ jobs, apps, currentUser, keyword, onApply, onWithdraw, onOpenChat, onManage }) => {
+const HomeTab = ({ jobs, apps, currentUser, keyword, onApply, onWithdraw, onOpenChat, onManage, onViewProfile }) => {
   const [selectedCategory, setSelectedCategory] = useState("ทั้งหมด");
 
   const filtered = jobs
@@ -58,6 +58,7 @@ const HomeTab = ({ jobs, apps, currentUser, keyword, onApply, onWithdraw, onOpen
                 onManage={onManage}
                 currentUser={currentUser}
                 apps={apps}
+                onViewProfile={onViewProfile}
               />
             ))
           )}

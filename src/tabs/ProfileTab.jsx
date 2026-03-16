@@ -7,7 +7,7 @@ import StatusBadge from '../components/ui/StatusBadge.jsx';
 import StarRating from '../components/ui/StarRating.jsx';
 import Btn from '../components/ui/Btn.jsx';
 
-const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onManage, onViewDetails }) => {
+const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onManage, onViewDetails, onReviewEmployer, onViewProfile }) => {
   const isEmployer = currentUser.role === "employer";
   const pendingApps = apps.filter(a => a.userId === currentUser.id && a.workStatus !== "completed");
   const completedApps = apps.filter(a => a.userId === currentUser.id && a.workStatus === "completed");
@@ -40,6 +40,7 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
       <div className="flex-1 w-full space-y-6">
         {!isEmployer ? (
           <>
+            {/* Pending / active jobs */}
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center"><span className="text-xl mr-2">⏳</span> งานที่สมัครแล้ว</h3>
               <div className="space-y-4">
@@ -71,6 +72,7 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
               </div>
             </div>
 
+            {/* Work history (completed) */}
             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
               <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center"><span className="text-xl mr-2">✅</span> ประวัติการทำงาน</h3>
               <div className="space-y-4">
@@ -79,25 +81,50 @@ const ProfileTab = ({ currentUser, jobs, apps, onWithdraw, handleDeleteJob, onMa
                 ) : completedApps.sort((a,b)=>b.completedAt-a.completedAt).map(a => {
                   const j = jobs.find(x => x.id === a.jobId);
                   if (!j) return null;
+                  const employer = { id: j.employerId, name: j.company };
                   return (
                     <div key={a.id}
-                      onClick={() => onViewDetails(j)}
-                      className="p-4 border border-gray-100 rounded-2xl bg-gray-50/50 space-y-3 cursor-pointer hover:border-orange-200 border border-transparent transition-colors"
+                      className="p-4 border border-gray-100 rounded-2xl bg-gray-50/50 space-y-3"
                     >
-                      <div>
-                        <div className="font-bold text-gray-800">{j.title} <span className="text-sm font-normal text-gray-500">({j.company})</span></div>
-                        <div className="text-xs text-gray-400">เสร็จสิ้นเมื่อ: {new Date(a.completedAt).toLocaleDateString('th-TH', { year:'numeric', month:'short', day:'numeric' })}</div>
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-2">
+                        <div>
+                          <div className="font-bold text-gray-800">{j.title}</div>
+                          <button
+                            onClick={() => onViewProfile && onViewProfile(employer.id)}
+                            className="text-sm text-[#F58220] hover:underline font-medium mt-0.5 text-left"
+                          >
+                            {employer.name} →
+                          </button>
+                          <div className="text-xs text-gray-400 mt-1">เสร็จสิ้นเมื่อ: {new Date(a.completedAt).toLocaleDateString('th-TH', { year:'numeric', month:'short', day:'numeric' })}</div>
+                        </div>
+                        <div className="flex flex-col gap-2 items-start md:items-end shrink-0" onClick={e => e.stopPropagation()}>
+                          {!a.employeeReviewForEmployer ? (
+                            <Btn small color="#F58220" outline onClick={() => onReviewEmployer && onReviewEmployer(a.id, employer.id)}>✍️ รีวิวนายจ้าง</Btn>
+                          ) : (
+                            <span className="text-xs font-bold text-green-600">✓ รีวิวนายจ้างแล้ว</span>
+                          )}
+                        </div>
                       </div>
 
+                      {/* Employer → Employee review */}
                       {a.employerReview ? (
-                        <div className="bg-white p-3 rounded-xl border border-orange-100 relative mt-3">
+                        <div className="bg-white p-3 rounded-xl border border-orange-100">
                           <div className="text-xs font-bold text-[#F58220] mb-1">ความเห็นจากนายจ้าง:</div>
                           <StarRating value={a.employerReview.rating} readonly size={14} />
-                          <p className="text-sm text-gray-600 mt-1 italic">"{a.employerReview.text}"</p>
+                          {a.employerReview.text ? <p className="text-sm text-gray-600 mt-1 italic">"{a.employerReview.text}"</p> : null}
                         </div>
                       ) : (
-                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 mt-3 text-center">
+                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
                           <p className="text-xs text-gray-400">รอรับการรีวิวจากนายจ้าง</p>
+                        </div>
+                      )}
+
+                      {/* Employee → Employer review */}
+                      {a.employeeReviewForEmployer && (
+                        <div className="bg-white p-3 rounded-xl border border-blue-100">
+                          <div className="text-xs font-bold text-blue-600 mb-1">รีวิวของคุณต่อนายจ้าง:</div>
+                          <StarRating value={a.employeeReviewForEmployer.rating} readonly size={14} />
+                          {a.employeeReviewForEmployer.text ? <p className="text-sm text-gray-600 mt-1 italic">"{a.employeeReviewForEmployer.text}"</p> : null}
                         </div>
                       )}
                     </div>

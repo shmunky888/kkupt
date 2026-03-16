@@ -24,6 +24,7 @@ import EditProfileModal from './components/modals/EditProfileModal.jsx';
 import ReviewModal from './components/modals/ReviewModal.jsx';
 import ManageJobModal from './components/modals/ManageJobModal.jsx';
 import ReportModal from './components/modals/ReportModal.jsx';
+import UserProfileModal from './components/modals/UserProfileModal.jsx';
 
 // Layout
 import Sidebar from './components/layout/Sidebar.jsx';
@@ -64,12 +65,14 @@ function MainApp() {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
   const [reviewAppId, setReviewAppId] = useState(null);
-  const [reviewJobTitle, setReviewJobTitle] = useState("");
+  const [reviewDirection, setReviewDirection] = useState("employer");
+  const [reviewTargetName, setReviewTargetName] = useState("");
 
   const [manageJobId, setManageJobId] = useState(null);
   const [reportTarget, setReportTarget] = useState(null); // { id, name }
   const [activeChatId, setActiveChatId] = useState(null);
   const [viewJob, setViewJob] = useState(null);
+  const [viewProfileUserId, setViewProfileUserId] = useState(null);
 
   useEffect(() => {
     const v1 = LS.get("kku_v1");
@@ -97,7 +100,14 @@ function MainApp() {
     window.alert = (msg) => {
       if (msg === "เปิด EditProfileModal") setShowEditProfileModal(true);
       else if (msg === "เปิด SettingsModal") setShowSettingsModal(true);
-      else if (msg.startsWith("เปิด ReviewModal:")) setReviewAppId(msg.split(":")[1].trim());
+      else if (msg.startsWith("เปิด ReviewModal:")) {
+        const appId = msg.split(":")[1].trim();
+        const app = apps.find(a => a.id === appId);
+        const name = users.find(u => u.id === app?.userId)?.name || "";
+        setReviewAppId(appId);
+        setReviewDirection("employer");
+        setReviewTargetName(name);
+      }
       else if (msg === "เปิด ManageJobModal") showToast("กรุณากดจัดการที่หน้าโปรไฟล์ (mock alert caught)");
       else if (msg.startsWith("เปิด Report Modal สำหรับ:")) setReportTarget({ id: msg.split(":")[1].trim(), name: "User" });
       else originalAlert(msg);
@@ -237,9 +247,10 @@ function MainApp() {
       {showNotifModal && <NotifModal notifs={notifs} onClose={() => setShowNotifModal(false)} onClearAll={(uid) => { syncNotifs(notifs.filter(n => n.userId !== uid)); setShowNotifModal(false); }} currentUser={currentUser} syncNotifs={syncNotifs} />}
       {showSettingsModal && <SettingsModal currentUser={currentUser} users={users} syncUsers={syncUsers} onClose={() => setShowSettingsModal(false)} onLogout={handleLogout} notifsEnabled={notifsEnabled} setNotifsEnabled={setNotifsEnabled} showToast={showToast} />}
       {showEditProfileModal && <EditProfileModal currentUser={currentUser} users={users} syncUsers={syncUsers} setCurrentUser={setCurrentUser} onClose={() => setShowEditProfileModal(false)} showToast={showToast} />}
-      {reviewAppId && <ReviewModal appId={reviewAppId} applicantName={users.find(u => u.id === apps.find(a => a.id === reviewAppId)?.userId)?.name || ""} apps={apps} syncApps={syncApps} onClose={() => setReviewAppId(null)} showToast={showToast} />}
-      {manageJobId && <ManageJobModal job={jobs.find(j => j.id === manageJobId)} apps={apps} users={users} syncApps={syncApps} addNotif={addNotif} showToast={showToast} onClose={() => setManageJobId(null)} handleDeleteJob={handleDeleteJob} />}
+      {reviewAppId && <ReviewModal appId={reviewAppId} targetName={reviewTargetName} direction={reviewDirection} apps={apps} syncApps={syncApps} onClose={() => setReviewAppId(null)} showToast={showToast} />}
+      {manageJobId && <ManageJobModal job={jobs.find(j => j.id === manageJobId)} apps={apps} users={users} syncApps={syncApps} addNotif={addNotif} showToast={showToast} onClose={() => setManageJobId(null)} handleDeleteJob={handleDeleteJob} onViewProfile={setViewProfileUserId} />}
       {reportTarget && <ReportModal targetUserId={reportTarget.id} targetName={reportTarget.name} showToast={showToast} onClose={() => setReportTarget(null)} />}
+      {viewProfileUserId && <UserProfileModal userId={viewProfileUserId} users={users} apps={apps} jobs={jobs} onClose={() => setViewProfileUserId(null)} />}
       {viewJob && (
         <Modal title="รายละเอียดงาน" onClose={() => setViewJob(null)}>
           <JobCard
@@ -252,6 +263,7 @@ function MainApp() {
             onManage={(j) => setManageJobId(j.id)}
             currentUser={currentUser}
             apps={apps}
+            onViewProfile={setViewProfileUserId}
           />
         </Modal>
       )}
@@ -295,10 +307,11 @@ function MainApp() {
                 onApply={handleApply} onWithdraw={handleWithdraw}
                 onOpenChat={handleOpenChat}
                 onManage={(job) => setManageJobId(job.id)}
+                onViewProfile={setViewProfileUserId}
               />
             )}
             {tab === "search" && (
-              <SearchTab jobs={jobs} apps={apps} currentUser={currentUser} onApply={handleApply} onWithdraw={handleWithdraw} onOpenChat={handleOpenChat} onManage={(job) => setManageJobId(job.id)} />
+              <SearchTab jobs={jobs} apps={apps} currentUser={currentUser} onApply={handleApply} onWithdraw={handleWithdraw} onOpenChat={handleOpenChat} onManage={(job) => setManageJobId(job.id)} onViewProfile={setViewProfileUserId} />
             )}
             {tab === "post" && (
               <PostTab currentUser={currentUser} jobs={jobs} syncJobs={syncJobs} showToast={showToast} />
@@ -307,7 +320,20 @@ function MainApp() {
               <ChatTab currentUser={currentUser} chats={chats} users={users} apps={apps} activeChatId={activeChatId} setActiveChatId={setActiveChatId} syncChats={syncChats} showToast={showToast} />
             )}
             {tab === "profile" && (
-              <ProfileTab currentUser={currentUser} jobs={jobs} apps={apps} onWithdraw={handleWithdraw} handleDeleteJob={handleDeleteJob} onManage={(jobId) => setManageJobId(jobId)} onViewDetails={setViewJob} />
+              <ProfileTab
+                currentUser={currentUser} jobs={jobs} apps={apps}
+                onWithdraw={handleWithdraw}
+                handleDeleteJob={handleDeleteJob}
+                onManage={(jobId) => setManageJobId(jobId)}
+                onViewDetails={setViewJob}
+                onReviewEmployer={(appId, employerId) => {
+                  const employerUser = users.find(u => u.id === employerId);
+                  setReviewAppId(appId);
+                  setReviewDirection("employee");
+                  setReviewTargetName(employerUser?.name || "");
+                }}
+                onViewProfile={setViewProfileUserId}
+              />
             )}
           </main>
 

@@ -7,7 +7,7 @@ import AvatarCircle from '../ui/AvatarCircle.jsx';
 import MapPreview from '../ui/MapPreview.jsx';
 import Btn from '../ui/Btn.jsx';
 
-const JobCard = ({ job, myApp, isOwner, onApply, onWithdraw, onOpenChat, onManage, currentUser, apps = [] }) => {
+const JobCard = ({ job, myApp, isOwner, onApply, onWithdraw, onOpenChat, onManage, currentUser, apps = [], onViewProfile }) => {
   const acceptedCount = apps.filter(a => a.jobId === job.id && a.applicationStatus === "accepted").length;
   const isFull = job.slotsNeeded > 0 && acceptedCount >= job.slotsNeeded;
   let badgeClass = "bg-gray-100 text-gray-700";
@@ -21,15 +21,18 @@ const JobCard = ({ job, myApp, isOwner, onApply, onWithdraw, onOpenChat, onManag
   return (
     <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-5 border border-gray-100">
       <div className="flex justify-between items-start mb-3">
-        <div className="flex gap-3 items-center">
+        <button
+          onClick={() => onViewProfile && onViewProfile(job.employerId)}
+          className="flex gap-3 items-center group text-left"
+        >
           <AvatarCircle name={job.company} size={40} />
           <div>
-            <div className="font-semibold text-gray-900">{job.company}</div>
+            <div className="font-semibold text-gray-900 group-hover:text-[#F58220] transition-colors">{job.company}</div>
             <div className={`mt-0.5 inline-block px-2 py-0.5 rounded-full text-xs font-medium ${badgeClass}`}>
               {job.category}
             </div>
           </div>
-        </div>
+        </button>
       </div>
 
       <div className="text-lg font-bold text-gray-800 mb-2">{job.title}</div>

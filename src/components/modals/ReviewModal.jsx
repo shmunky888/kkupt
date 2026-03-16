@@ -1,24 +1,30 @@
 // src/components/modals/ReviewModal.jsx
-// Description: Modal for employees to write a star rating + text review for a completed job.
+// Description: Modal for writing star+text reviews. Supports both directions:
+//   direction="employer" → employer reviews employee (stores in employerReview)
+//   direction="employee" → employee reviews employer (stores in employeeReviewForEmployer)
 
 import React, { useState } from 'react';
 import Modal from '../ui/Modal.jsx';
 import Btn from '../ui/Btn.jsx';
 import StarRating from '../ui/StarRating.jsx';
 
-const ReviewModal = ({ appId, applicantName, apps, syncApps, onClose, showToast }) => {
+const ReviewModal = ({ appId, targetName, direction = "employer", apps, syncApps, onClose, showToast }) => {
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
 
+  const isEmployerReviewing = direction === "employer";
+  const title = isEmployerReviewing ? `รีวิวพนักงาน: ${targetName}` : `รีวิวนายจ้าง: ${targetName}`;
+  const field = isEmployerReviewing ? "employerReview" : "employeeReviewForEmployer";
+
   const handleSave = () => {
     if (rating === 0) return showToast("กรุณาให้คะแนนดาว");
-    syncApps(apps.map(a => a.id === appId ? { ...a, employerReview: { rating, text } } : a));
+    syncApps(apps.map(a => a.id === appId ? { ...a, [field]: { rating, text } } : a));
     showToast("บันทึกรีวิวแล้ว!");
     onClose();
   };
 
   return (
-    <Modal title={`รีวิวพนักงาน: ${applicantName}`} onClose={onClose}>
+    <Modal title={title} onClose={onClose}>
       <div className="flex flex-col items-center space-y-6">
         <div className="text-center">
           <p className="text-sm text-gray-500 mb-2">ให้คะแนนความพึงพอใจ</p>
