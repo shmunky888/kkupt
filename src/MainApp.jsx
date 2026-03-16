@@ -317,7 +317,7 @@ function MainApp() {
               <PostTab currentUser={currentUser} jobs={jobs} syncJobs={syncJobs} showToast={showToast} />
             )}
             {tab === "chat" && (
-              <ChatTab currentUser={currentUser} chats={chats} users={users} apps={apps} activeChatId={activeChatId} setActiveChatId={setActiveChatId} syncChats={syncChats} showToast={showToast} />
+              <ChatTab currentUser={currentUser} chats={chats} users={users} apps={apps} activeChatId={activeChatId} setActiveChatId={setActiveChatId} syncChats={syncChats} showToast={showToast} onViewProfile={setViewProfileUserId} />
             )}
             {tab === "profile" && (
               <ProfileTab

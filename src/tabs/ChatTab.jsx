@@ -6,7 +6,7 @@ import { Search, MessageCircle } from 'lucide-react';
 import AvatarCircle from '../components/ui/AvatarCircle.jsx';
 import Btn from '../components/ui/Btn.jsx';
 
-const ChatTab = ({ currentUser, chats, users, activeChatId, setActiveChatId, syncChats, showToast, apps }) => {
+const ChatTab = ({ currentUser, chats, users, activeChatId, setActiveChatId, syncChats, showToast, apps, onViewProfile }) => {
   const [text, setText] = useState("");
 
   const activeChat = chats.find(c => c.id === activeChatId);
@@ -83,11 +83,16 @@ const ChatTab = ({ currentUser, chats, users, activeChatId, setActiveChatId, syn
               <div className="p-4 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
                 <div className="flex items-center gap-3">
                   <button className="md:hidden text-gray-500 p-1" onClick={() => setActiveChatId(null)}>❮</button>
-                  <AvatarCircle name={otherUser?.name} size={40} />
-                  <div>
-                    <div className="font-bold text-gray-800 text-sm">{otherUser?.name}</div>
-                    <div className="text-xs text-green-500 flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> ออนไลน์</div>
-                  </div>
+                  <button
+                    onClick={() => onViewProfile && onViewProfile(otherPartyId)}
+                    className="flex items-center gap-3 group text-left"
+                  >
+                    <AvatarCircle name={otherUser?.name} size={40} />
+                    <div>
+                      <div className="font-bold text-gray-800 text-sm group-hover:text-[#F58220] transition-colors">{otherUser?.name}</div>
+                      <div className="text-xs text-green-500 flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span> ออนไลน์</div>
+                    </div>
+                  </button>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => window.alert("กำลังโทร... (จำลอง)")} className="w-10 h-10 rounded-full bg-orange-50 text-[#F58220] flex items-center justify-center hover:bg-orange-100 transition-colors">📞</button>
